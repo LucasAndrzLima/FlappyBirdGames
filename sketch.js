@@ -1,6 +1,7 @@
 let bird;
 let pipes = [];
 let score = 0;
+let bestScore = 0;
 let gameState = "start";
 
 let jumpSound;
@@ -14,6 +15,12 @@ function preload() {
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
+
+  bestScore = getItem("bestScore");
+  if (bestScore === null) {
+    bestScore = 0;
+  }
+
   resetGame();
 }
 
@@ -140,6 +147,11 @@ function checkCollisions() {
 }
 
 function killBird() {
+  if (score > bestScore) {
+    bestScore = score;
+    storeItem("bestScore", bestScore);
+  }
+
   if (!alreadyPlayedDeath) {
     deathSound.play();
     alreadyPlayedDeath = true;
@@ -153,29 +165,34 @@ function drawScore() {
   textSize(24);
   textAlign(LEFT);
   text("Score: " + score, 20, 30);
+  text("Best Score: " + bestScore, 20, 60);
 }
 
 function drawStartScreen() {
   fill(0);
   textAlign(CENTER);
   textSize(40);
-  text("FLAPPY BIRD", width / 2, height / 2 - 50);
+  text("FLAPPY BIRD", width / 2, height / 2 - 70);
+
+  textSize(24);
+  text("Best Score: " + bestScore, width / 2, height / 2 - 25);
 
   textSize(20);
-  text("Clique ou pressione ESPAÇO para começar", width / 2, height / 2);
+  text("Clique ou pressione ESPAÇO para começar", width / 2, height / 2 + 20);
 }
 
 function drawGameOver() {
   fill(0);
   textAlign(CENTER);
   textSize(40);
-  text("GAME OVER", width / 2, height / 2 - 50);
+  text("GAME OVER", width / 2, height / 2 - 70);
 
   textSize(25);
-  text("Score: " + score, width / 2, height / 2);
+  text("Score: " + score, width / 2, height / 2 - 20);
+  text("Best Score: " + bestScore, width / 2, height / 2 + 15);
 
   textSize(18);
-  text("Clique ou pressione ESPAÇO para reiniciar", width / 2, height / 2 + 40);
+  text("Clique ou pressione ESPAÇO para reiniciar", width / 2, height / 2 + 60);
 }
 
 function jumpBird() {
