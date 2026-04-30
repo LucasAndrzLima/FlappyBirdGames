@@ -2,24 +2,25 @@ let bird;
 let pipes = [];
 let score = 0;
 let gameState = "start";
+
+let jumpSound;
+let deathSound;
+let alreadyPlayedDeath = false;
+
+function preload() {
+  jumpSound = loadSound("jump.mp3");
+  deathSound = loadSound("death.mp3");
+}
+
 function setup() {
-  createCanvas(windowWidth, windowHeight); // Define o canvas para ocupar toda a janela
-
-  bird = {
-    x: 120,
-    y: height / 2,
-    size: 30,
-    velocity: 0,
-    gravity: 0.5,
-    jump: -8
-  };
-
-  pipes.push(createPipe());
+  createCanvas(windowWidth, windowHeight);
+  resetGame();
 }
 
 function windowResized() {
-  resizeCanvas(windowWidth, windowHeight); // Redimensiona o canvas ao redimensionar a janela
+  resizeCanvas(windowWidth, windowHeight);
 }
+
 function draw() {
   background(135, 206, 235);
 
@@ -40,7 +41,6 @@ function playGame() {
   drawPipes();
 
   drawScore();
-
   checkCollisions();
 }
 
@@ -66,15 +66,15 @@ function drawBird() {
 }
 
 function createPipe() {
-  let gap = 120;
-  let topHeight = random(50, height - gap - 80);
+  let gap = 200;
+  let topHeight = random(100, height - gap - 100);
 
   return {
     x: width,
     topHeight: topHeight,
     gap: gap,
-    width: 60,
-    speed: 3,
+    width: 80,
+    speed: 4,
     scored: false
   };
 }
@@ -95,7 +95,7 @@ function updatePipes() {
     }
   }
 
-  if (pipes.length === 0 || pipes[pipes.length - 1].x < width - 220) {
+  if (pipes.length === 0 || pipes[pipes.length - 1].x < width - 300) {
     pipes.push(createPipe());
   }
 }
@@ -116,8 +116,8 @@ function drawPipes() {
 }
 
 function checkCollisions() {
-  if (bird.y - bird.size / 2 < 0 || bird.y + bird.size / 2 > height) {
-    gameState = "gameover";
+  if (bird.y < 0 || bird.y > height) {
+    killBird();
   }
 
   for (let pipe of pipes) {
@@ -129,56 +129,66 @@ function checkCollisions() {
     let pipeLeft = pipe.x;
     let pipeRight = pipe.x + pipe.width;
 
-    let hitPipeX = birdRight > pipeLeft && birdLeft < pipeRight;
-    let hitTopPipe = birdTop < pipe.topHeight;
-    let hitBottomPipe = birdBottom > pipe.topHeight + pipe.gap;
+    let hitX = birdRight > pipeLeft && birdLeft < pipeRight;
+    let hitTop = birdTop < pipe.topHeight;
+    let hitBottom = birdBottom > pipe.topHeight + pipe.gap;
 
-    if (hitPipeX && (hitTopPipe || hitBottomPipe)) {
-      gameState = "gameover";
+    if (hitX && (hitTop || hitBottom)) {
+      killBird();
     }
   }
 }
 
+function killBird() {
+  if (!alreadyPlayedDeath) {
+    deathSound.play();
+    alreadyPlayedDeath = true;
+  }
+
+  gameState = "gameover";
+}
+
 function drawScore() {
   fill(0);
-  noStroke();
   textSize(24);
   textAlign(LEFT);
-  text("Score: " + score, 20, 35);
+  text("Score: " + score, 20, 30);
 }
 
 function drawStartScreen() {
   fill(0);
   textAlign(CENTER);
-  textSize(32);
+  textSize(40);
   text("FLAPPY BIRD", width / 2, height / 2 - 50);
 
-  textSize(18);
-  text("Clique ou aperte ESPAÇO para começar", width / 2, height / 2);
-  text("Desvie dos canos para ganhar pontos", width / 2, height / 2 + 30);
+  textSize(20);
+  text("Clique ou pressione ESPAÇO para começar", width / 2, height / 2);
 }
 
 function drawGameOver() {
   fill(0);
   textAlign(CENTER);
-  textSize(36);
-  text("GAME OVER", width / 2, height / 2 - 40);
+  textSize(40);
+  text("GAME OVER", width / 2, height / 2 - 50);
 
-  textSize(22);
+  textSize(25);
   text("Score: " + score, width / 2, height / 2);
 
-  textSize(16);
-  text("Clique ou aperte ESPAÇO para reiniciar", width / 2, height / 2 + 40);
+  textSize(18);
+  text("Clique ou pressione ESPAÇO para reiniciar", width / 2, height / 2 + 40);
 }
 
 function jumpBird() {
   if (gameState === "start") {
     gameState = "game";
+    jumpSound.play();
   } else if (gameState === "game") {
     bird.velocity = bird.jump;
+    jumpSound.play();
   } else if (gameState === "gameover") {
     resetGame();
     gameState = "game";
+    jumpSound.play();
   }
 }
 
@@ -193,9 +203,18 @@ function keyPressed() {
 }
 
 function resetGame() {
-  bird.y = 200;
-  bird.velocity = 0;
+  bird = {
+    x: width / 4,
+    y: height / 2,
+    size: 30,
+    velocity: 0,
+    gravity: 0.6,
+    jump: -10
+  };
+
   pipes = [];
   pipes.push(createPipe());
+
   score = 0;
+  alreadyPlayedDeath = false;
 }
