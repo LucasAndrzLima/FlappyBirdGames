@@ -2,13 +2,12 @@ let bird;
 let pipes = [];
 let score = 0;
 let gameState = "start";
-
 function setup() {
-  createCanvas(600, 400);
+  createCanvas(windowWidth, windowHeight); // Define o canvas para ocupar toda a janela
 
   bird = {
     x: 120,
-    y: 200,
+    y: height / 2,
     size: 30,
     velocity: 0,
     gravity: 0.5,
@@ -18,6 +17,9 @@ function setup() {
   pipes.push(createPipe());
 }
 
+function windowResized() {
+  resizeCanvas(windowWidth, windowHeight); // Redimensiona o canvas ao redimensionar a janela
+}
 function draw() {
   background(135, 206, 235);
 
